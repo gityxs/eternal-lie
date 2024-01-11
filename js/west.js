@@ -8,14 +8,14 @@ let stats = {
         callString: 'vision',
         string: 'Vision',
         description: 'The key to unlocking the mysteries of the universe.',
-        current: 100,
+        current: 0,
         unlocked: true
     },
     charm: {//cultist max//
         callString: 'charm',
         string: 'Charm',
         description: 'With enough Charisma, you can convince people of anything.',
-        current: 100,
+        current: 0,
         unlocked: false,
         unlock: ['vision', 1]
     },
