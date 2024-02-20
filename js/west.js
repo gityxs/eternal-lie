@@ -27,7 +27,7 @@ let stats = {
         max: 100,
         unlocked: true,
         dyingB: false,
-        dyingCounter: [0, 10],
+        dyingCounter: [0, 1],
         coma: false
     },
     radiance: {//energy//
@@ -69,8 +69,6 @@ let actions = {
         string: 'Study Tome',
         description: ['Research into Abyssal Horrors.', 'Cost: Sanity', 'Benefit: Vision'],
         level: 1.2,
-        timer: 500,
-        trait: 'vision',
         madnessChance: 80,
         unlocked: true,
         purchased: true
@@ -79,11 +77,10 @@ let actions = {
         string: 'Chant',
         description: ['Reciting arcane passages imbues you with unearthly Charm', 'Cost: Sanity', 'Benefit: Charm'],
         level: 1,
-        trait: 'charm',
         madnessChance: 80,
         toggle: false,
-        autoNum: 4,
-        autoCtr: 0,
+        ticCounter: 0,
+        ticsNeeded: 2,
         unlocked: false,
         purchased: false,
         lockText: "Chant the Words.  Cost: 4 Vision",
@@ -113,7 +110,7 @@ let actions = {
         multiplier: 8,
         unlocked: false,
         purchased: false,
-        lockText: "Preach to the Faithful  8 Vision",
+        lockText: "Preach to the Faithful Cost: 8 Vision",
         unlockCost: 8,
         comment: 'So many lost and fearful. Bring them into the fold.'
     }
@@ -125,25 +122,19 @@ function studyTome(){
   plays(studying);
   var element = document.getElementById("studyProgress");   
   var width = 1;
-  var identity = setInterval(scene, 5);
+  var identity = setInterval(study, 5);
      let temp =  document.getElementById('studyTomeWrap');
      temp.classList.add("studyPulse");
-     let tempTimer = actions['studyTome']['timer'];
+     let tempTimer = actions.studyTome.timer;
      setTimeout(()=>{temp.classList.remove("studyPulse");}, tempTimer);
-  function scene() {
+  function study() {
     if (width >= 100) {
         let madChance = Math.floor(Math.random() * 100);   
-        if(madChance <= actions['studyTome']['madnessChance']){
-            stats['madness']['current'] += 0.8;
-            document.getElementById('madness').innerHTML = Math.floor(stats['madness']['current'])  ;
-            flash('madness', '#FE2EF7', 'white');        
+        if(madChance <= actions.studyTome.madnessChance){
+             numberChange('stats', 'madness', 1 , '#FE2EF7', 'blue');  
             }
-        stats['vision']['current']  += actions.studyTome.level;
-        document.getElementById('vision').innerHTML = Math.floor(stats['vision']['current']) ;
-        flash('vision', '#40E0D0', 'white');
-        stats['health']['current']  -= 0.8;
-        document.getElementById('health').innerHTML = Math.floor(stats['health']['current']) ;
-        flash('health', 'red', 'white');   
+         numberChange('stats', 'vision', actions.studyTome.level , '#40E0D0', 'red'); 
+         numberChange('stats', 'health',  -1 , 'blue', 'red');  
         clearInterval(identity); 
         width = 0; 
         element.style.width = width + '%'; 
@@ -156,18 +147,12 @@ function studyTome(){
 
 function chant(){
     let madChance = Math.floor(Math.random() * 100);      
-     if(madChance <= actions['chant']['madnessChance']){
-            stats['madness']['current'] += 1;
-            document.getElementById('madness').innerHTML = Math.floor(stats['madness']['current']);
-            flash('madness', '#FE2EF7', 'white');
-            }
-        stats['health']['current']  -= 1;
-        document.getElementById('health').innerHTML = Math.floor(stats['health']['current']) ;
-        flash('health', 'red', 'white');   
-        stats['charm']['current'] += 1;
-        document.getElementById('charm').innerHTML = Math.floor(stats['charm']['current']);
-        flash('charm', '#FFFF00', 'white');
-    };
+     if(madChance <= actions.chant.madnessChance){
+         numberChange('stats', 'madness', 1 , '#FE2EF7', 'blue');  
+        }
+    numberChange('stats', 'health',  -1 , 'blue', 'red');
+    numberChange('stats', 'charm',  1 , '#FFFF00', 'red');  
+};
         
 function chantTimer(){
     var intervalId = null;
@@ -224,56 +209,52 @@ function hideDreamChoices() {
 
 // Select an option and update the main div text
 function dreamChoice(option) {
-     let temp = dreamChoices[option]['string'];
+     let temp = dreamChoices[option].string;
     // change dream type
     const dreamWrap = document.getElementById('dreamWrap');
     document.getElementById("dreamChosen").innerHTML = temp;
     actions['dream']['type'] = dreamKeys.indexOf(option);
+    window.console.log(actions.dream.type, option);
     hideDreamChoices();
 }
     let startTime;
     let endTime;
     let timerInterval;
     let sequenceEnded = false;
-    function dream(totalTime, cost){
-        let multiplier = Math.floor(totalTime); 
-        if(multiplier >1){
-            let benefitAmount = multiplier * Math.max(cost, 1);
+    function dream(totalTime, cost){//consider changing radiance costs outputting each second
+        let time = Math.floor(totalTime); 
+        if(time >1){
+            let benefitAmount = time * Math.max(cost, 1);
             let tempMad = Math.floor(Math.random() * benefitAmount) + 1;
-            if (cost > stats['radiance']['current']) {
-                stats['radiance']['current'] = 0;
-            } else {
-                stats['radiance']['current'] -= cost;
-            }
             let type = actions['dream']['type'];
+            window.console.log(type);
             if(type === 0){
-                stats['madness']['current'] += tempMad + 4;
-                stats['health']['current'] += benefitAmount * 8;
-                stats['vision']['current'] += benefitAmount * 2;
+                numberChange('stats', 'madness', (tempMad + 4) , '#FE2EF7', 'blue');  
+                numberChange('stats', 'health', (benefitAmount * 8) , 'blue', 'red');  
+                numberChange('stats', 'vision', (benefitAmount * 4) , 'blue', 'red');  
             }else if(type === 1){
-                stats['madness']['current'] += tempMad;
-                stats['health']['current'] += benefitAmount * 8;
-                stats['vision']['current'] += benefitAmount * 2;
+                numberChange('stats', 'madness',  tempMad , '#FE2EF7', 'blue'); 
+                numberChange('stats', 'health', (benefitAmount * 8) , 'blue', 'red');
+                numberChange('stats', 'vision', (benefitAmount * 8) , 'blue', 'red');  
+                window.console.log(stats.radiance.current);
+                numberChange('stats', 'radiance', -cost , 'blue', 'red');  
+                window.console.log(stats.radiance.current);
             }else if(type === 2){
-                stats['madness']['current'] += tempMad;
-                stats['health']['current'] += benefitAmount * 8;
-                stats['vision']['current'] += benefitAmount * multiplier;
+                numberChange('stats', 'madness',  tempMad , '#FE2EF7', 'blue'); 
+                numberChange('stats', 'health', (benefitAmount * 8) , 'blue', 'red');
+                numberChange('stats', 'vision', (benefitAmount * time * 8) , 'blue', 'red');  
+                numberChange('stats', 'radiance', -cost , 'blue', 'red');  
             }else if(type === 3){
-                stats['madness']['current'] += tempMad  * multiplier;
-                stats['health']['current'] -= benefitAmount;
-                stats['vision']['current'] += benefitAmount * multiplier;
+                numberChange('stats', 'madness',  (tempMad  * time) , '#FE2EF7', 'blue'); 
+                numberChange('stats', 'health', benefitAmount , 'blue', 'red');
+                numberChange('stats', 'vision', (benefitAmount * time * 8) , 'blue', 'red');  
+                numberChange('stats', 'radiance', -cost , 'blue', 'red');  
             }
-            //outputs
-            document.getElementById('radiance').innerHTML = Math.floor(stats['radiance']['current']) ;
-            document.getElementById('madness').innerHTML = Math.floor(stats['madness']['current']) ;
-            document.getElementById('health').innerHTML = Math.floor(stats['health']['current']) ;
-            document.getElementById('vision').innerHTML = Math.floor(stats['vision']['current']);
             let temp =  document.getElementById('dreamWrap');
             temp.classList.add("dreamPulse");
             let tempTimer = actions['dream']['timer'];
             setTimeout(()=>{temp.classList.remove("dreamPulse");}, tempTimer);
             flash('health', 'blue', 'white');
-            flash('madness', '#FE2EF7', 'white');
             flash('vision', 'blue', 'white');
         }
     }
@@ -288,7 +269,7 @@ function startDreamTimer() {
     timerInterval = setInterval(() => updateTimer(), 100);
 }
 function calculateCost(elapsedTime) {
-    let dreamType = actions['dream']['type'];
+    let dreamType = actions.dream.type;
     switch (dreamType) {
         case 0:
             return 0; // no cost
@@ -312,7 +293,7 @@ function updateTimer() {
     // Calculate the cost per second using the formula
     const costNextSecond = calculateCost(elapsedTime + 1);
     // Check if the cost per second exceeds available radiance
-    if (costNextSecond > stats['radiance']['current']) {
+    if (costNextSecond > stats.radiance.current) {
         comment('We can go no further.');
         endDreamTimer(); // Stop the timer and call endDreamTimer
             timerDisplay.style.fontSize="17vw";
@@ -333,6 +314,7 @@ function endDreamTimer() {
         const cost = calculateCost(totalTime);
         const timerDisplay = document.getElementById("dreamTimer");
         timerDisplay.style.display = "none";
+        timerDisplay.style.fontSize="17vw";
         // Call the dreamEnd function with the time as a variable
         dream(totalTime, cost);
         clearInterval(timerInterval);
@@ -343,13 +325,12 @@ function endDreamTimer() {
 }
 
 function preach() {
-    let costAmount = Math.max((cult['faithful']['current'] * actions.preach.multiplier), 4);
-    let benefitAmount = actions['preach']['benefit'];
-    if (stats['charm']['current'] >= costAmount) {
+    window.console.log(stats.charm.current >=  actions.preach.cost);
+    if (stats.charm.current >=  actions.preach.cost) {
         if(cult.faithful.unlocked === false){
             cult.faithful.unlocked = true;
             domUnlocks.cult = true;
-            eventBox("images/cultist.png", "The Cult", "One alone cannot accomplish Greatness. You must find and use those foolish enough to follow you into darkness.");
+            eventBox("images/faithful.png", "The Cult", "One alone cannot accomplish Greatness. You must find and use those foolish enough to follow you into darkness.");
             setTimeout(() => {
                 document.getElementById('cultTab').style.display='block';
                 document.getElementById('faithfulWrap').style.display='block';
@@ -360,20 +341,18 @@ function preach() {
         }
          let temp =  document.getElementById('preachWrap');
          temp.classList.add("preachPulse");
-         let tempTimer = actions['preach']['timer'];
+         let tempTimer = actions.preach.timer;
          setTimeout(()=>{temp.classList.remove("preachPulse");}, tempTimer);
         //plays(preaching);
-        stats['charm']['current'] -= costAmount;
-        cult['faithful']['current'] += benefitAmount;
-        document.getElementById('charm').innerHTML = Math.floor(stats['charm']['current']);
-        document.getElementById('faithful').innerHTML = cult['faithful']['current'];
-        actions.preach.cost = Math.max((cult['faithful']['current'] * actions.preach.multiplier), 4);
+         numberChange('stats', 'charm',  -actions.preach.cost , '#FE2EF7', 'blue'); 
+         numberChange('cult', 'faithful',  actions.preach.benefit , '#FE2EF7', 'blue');
+         window.console.log(actions.preach.benefit, cult.faithful.current);
+        actions.preach.cost = Math.max((cult.faithful.current * actions.preach.multiplier), 4);
         document.getElementById('preachCost').innerHTML = actions.preach.cost;
         document.getElementById('preachWrapCost').innerHTML = actions.preach.cost;
         //innocent chance
-        if(vault['love']['current'] > vault['terror']['current'] || actionUpgrades.preach.fiction.unlocked === true){
-            cult['innocents']['current'] += 1;
-            document.getElementById('innocents').innerHTML = cult['innocents']['current'];
+        if(vault.love.current > vault.terror.current || actionUpgrades.preach.fiction.unlocked === true){
+            numberChange('cult', 'innocents',  1 , '#FE2EF7', 'blue');
             if(cult.innocents.unlocked === false){
                 cult.innocents.unlocked = true;
                 document.getElementById('innocentsWrap').style.display='block';
@@ -382,22 +361,19 @@ function preach() {
             comment('So Innocent...');
             }
         }
-        flash('faithful', 'blue', 'white');
-        flash('cultTab', 'blue', 'white');
-        flash('charm', 'red', 'white');
-        }
-    };
+    }
+};
 
      	//=========================================
 	// West Action Upgrades  Scroll of T'yog
 	//=========================================
         
-let actionUpgrades = {
+let actionUpgrades = { //add mad chance reduction to reading
   studyTome: {
       pnat: {
           string: 'Pnatotic Manuscripts',
-          description: ['Translating the manuscripts will double your insights when studying', ' Cost: Vision'],
-          cost: 44,
+          description: ['Translating the manuscripts will double your insights when studying', ' Cost: Vision '],
+          cost: 22,
           func: pnat,
           costType: 'vision',
           unlocked: false,
@@ -405,8 +381,8 @@ let actionUpgrades = {
       }, 
       hsan: {
           string: 'Seven Cryptical Books of Hsan',
-          description: ['routes in the dreaming. does not show kadath', 'Cost: Vision'],
-          cost: 88,
+          description: ['routes in the dreaming. does not show kadath', 'Cost: Vision '],
+          cost: 44,
           func: hsan,
           costType: 'vision',
           unlocked: false,
@@ -414,8 +390,8 @@ let actionUpgrades = {
       },      
       dzyan: {
           string: 'Book of Dzyan',
-          description: ['history book atlantis,, lemuria', ' Cost: Vision'],
-          cost: 444,
+          description: ['history book atlantis,, lemuria', ' Cost: Vision '],
+          cost: 88,
           func: dzyan,
           costType: 'vision',
           unlocked: false,
@@ -423,17 +399,17 @@ let actionUpgrades = {
       },            
       dhol: {
           string: 'Dhol Chants',
-          description: ['Secrets of subliminal Chanting.', ' Cost: Charm 444 Vision'],
+          description: ['Secrets of subliminal Chanting.', ' Cost: Charm 222 Vision '],
           cost: 444,
           func: dhol,
           costType: 'vision',
           unlocked: false,
           purchased: false
       },         
-      goul: {
+      goul: {//unlocked by men of leng unlocks cannibalism
           string: 'Cultes des Goules',
-          description: ['To Serve Man', '  Cost: Vision'],
-          cost: 888,
+          description: ['To Serve Man', '  Cost: Vision '],
+          cost: 444,
           func: goul,
           costType: 'vision',
           unlocked: false,
@@ -443,7 +419,7 @@ let actionUpgrades = {
       },  
       kult: {
           string: 'Unaussprechlichen Kulten',
-          description: [' Cost: Vision'],
+          description: [' Cost: Vision '],
           cost: 4444,
           func: kult,
           costType: 'vision',
@@ -452,7 +428,7 @@ let actionUpgrades = {
       },           
       azat: {//sign name may move higher
           string: 'Book of Azathoth',
-          description: ['Sign your name and .', '  Cost: Vision'],
+          description: ['Sign your name and .', '  Cost: Vision '],
           cost: 8888,
           func: azat,
           costType: 'vision',
@@ -461,7 +437,7 @@ let actionUpgrades = {
       }, 
       alch: { //tangential, may be cut
           string: 'Clavis Alchimiae',
-          description: ['Turn Flesh into Ichor.', ' Cost: Vision'],
+          description: ['Turn Flesh into Ichor.', ' Cost: Vision '],
           cost: 100,
           func: alch,
           costType: 'vision',
@@ -470,7 +446,7 @@ let actionUpgrades = {
       },    
       eibon: {
           string: 'Book of Eibon',
-          description: ['from hyborea. spellbook entrancement, petrification -art, open doorway for Tsathoggua or shub', '  Cost: Vision'],
+          description: ['from hyborea. spellbook entrancement, petrification -art, open doorway for Tsathoggua or shub', '  Cost: Vision '],
           cost: 44444,
           func: eibon,
           costType: 'vision',
@@ -481,7 +457,7 @@ let actionUpgrades = {
       },      
       damn: {
           string: 'Liber Damnatus',
-          description: ['Rebirth Yog-sothhoth.', ' Cost: Vision'],
+          description: ['Rebirth Yog-sothhoth.', ' Cost: Vision '],
           cost: 88888,
           func: damn,
           costType: 'vision',
@@ -490,7 +466,7 @@ let actionUpgrades = {
       },  
       necr: {
           string: 'Necronomicon',
-          description: ['These sounds are more pleasing to the ear.', '  Cost: Vision'],
+          description: ['These sounds are more pleasing to the ear.', '  Cost: Vision '],
           cost: 848848,
           func: necr,
           costType: 'vision',
@@ -499,15 +475,6 @@ let actionUpgrades = {
       }
   },
   chant: {
-      dholChants: {
-          string: 'Dhol Chants',
-          description: ['You can now chant internally, the words endlessly repeating in the back of your mind. Toggleable. '],
-          cost: 100,
-          func: dholChants,
-          costType: 'vision',
-          unlocked: false,
-          purchased: false
-      },
       echoes: {
           string: 'Echoes',
           description: [''],
@@ -543,16 +510,21 @@ let actionUpgrades = {
     	//=========================================
 	//                  Study upgrades
 	//=========================================
- function sMult(){//multiplies study parameter and comments
+ function studyMultiplier(){//multiplies study parameter and comments
         actions.studyTome.level = actions.studyTome.level * 2;
-        comment('(Studying x2)', 'lightgreen');
- }       
+        comment('(Studying x 2)', 'lightgreen');
+ }     
+ function madCapIncrease(){
+     stats.madness.madCap = stats.madness.madCap * 2;
+    comment('(Madness Capacity x 2)', 'pink');
+ }
 function pnat(){//unlocked by crypt
     if(stats.vision.current >= actionUpgrades.studyTome.pnat.cost){
         stats.vision.current -= actionUpgrades.studyTome.pnat.cost;
         document.getElementById('vision').innerHTML= Math.floor(stats.vision.current);
-        document.getElementById('pnatWrap').style.display='none';
-        sMult();
+        flashFade('pnatWrap');
+        studyMultiplier();
+        madCapIncrease();
         actionUpgrades.studyTome.pnat.purchased = true;
     }
 }
@@ -560,14 +532,15 @@ function hsan(){//unlocked by tome
     if(stats.vision.current >= actionUpgrades.studyTome.hsan.cost){
         stats.vision.current -= actionUpgrades.studyTome.hsan.cost;
         document.getElementById('vision').innerHTML= Math.floor(stats.vision.current);
-        document.getElementById('hsanWrap').style.display='none';
-        comment('Maps to the Dreaming! (Dream Expeditions)', 'lightgreen');
-        document.getElementById('dreamEx').style.display='block';
-        document.getElementById('celephaisWrap').style.display='block';
-        document.getElementById('dylathLeenWrap').style.display='block';
-        document.getElementById('landOfZarWrap').style.display='block';
-        flash('expeditionsTab', 'lightgreen');
-        sMult();
+        flashFade('hsanWrap');
+        //comment('Maps to the Dreaming! (Dream Expeditions)', 'lightgreen');
+        //document.getElementById('dreamEx').style.display='block';
+        //document.getElementById('celephaisWrap').style.display='block';
+        //document.getElementById('dylathLeenWrap').style.display='block';
+        //document.getElementById('landOfZarWrap').style.display='block';
+        //flash('expeditionsTab', 'lightgreen');
+        studyMultiplier();
+        madCapIncrease();
         actionUpgrades.studyTome.hsan.purchased = true;
     }
 }
@@ -575,23 +548,28 @@ function dzyan(){//unlocked by tome
     if(stats.vision.current >= actionUpgrades.studyTome.dzyan.cost){
         stats.vision.current -= actionUpgrades.studyTome.dzyan.cost;
         document.getElementById('vision').innerHTML= Math.floor(stats.vision.current);
-        document.getElementById('dzyanWrap').style.display='none';
-        comment('Remnants of lost continents! ( Island Ruins)', 'lightgreen');
-        document.getElementById('islandRuinsWrap').style.display='block';
-        flash('expeditionsTab', 'lightgreen');
-        sMult();
+        flashFade('dzyanWrap');
+       // comment('Remnants of lost continents! ( Island Ruins)', 'lightgreen');
+       // document.getElementById('islandRuinsWrap').style.display='block';
+       // flash('expeditionsTab', 'lightgreen');
+        studyMultiplier();
+        madCapIncrease();
         actionUpgrades.studyTome.dzyan.purchased = true;
     }
 }
 function dhol(){ //unlocked by tome
-    if(stats.vision.current >= actionUpgrades.studyTome.dhol.cost && stats.charm.current >= 444){
-        stats.vision.current -= actionUpgrades.studyTome.dhol.cost;
-        document.getElementById('vision').innerHTML= Math.floor(stats.vision.current);
-        document.getElementById('dholWrap').style.display='none';
-        actions.studyTome.level = actions.studyTome.level * 2;
+    if((stats.vision.current >= 444) && (stats.charm.current >= 222)){
+        numberChange('stats', 'vision', -444, '', 'red');
+        numberChange('stats', 'charm', -222, '', 'red');
+        flashFade('dholWrap');
         comment('Endless Chanting. ( Chanting Toggle)', 'lightgreen');
-        document.getElementById('dholChants').style.display='block';        
-        sMult();
+        document.getElementById('chantToggle').style.display='block';
+        let chantWrap = document.getElementById('chantWrap');
+        const clonedElement = chantWrap.cloneNode(true);
+        chantWrap.parentNode.replaceChild(clonedElement, chantWrap);
+        document.getElementById('chantWrap').addEventListener('click',  chantToggle);
+        studyMultiplier();
+        madCapIncrease();
         actionUpgrades.studyTome.dhol.purchased = true;
     }
 }
@@ -600,44 +578,62 @@ function kult(){//unlocked by tome
     if(stats.vision.current >= actionUpgrades.studyTome.kult.cost){
         stats.vision.current -= actionUpgrades.studyTome.kult.cost;
         document.getElementById('vision').innerHTML= Math.floor(stats.vision.current);
-        document.getElementById('kultWrap').style.display='none';
-        sMult();
+        flashFade('kultWrap');
+        studyMultiplier();
+        madCapIncrease();
         actionUpgrades.studyTome.kult.purchased = true;
+    }
+}
+function goul(){//unlocked by men of leng unlocks cannibalism
+    if(stats.vision.current >= actionUpgrades.studyTome.goul.cost){
+        stats.vision.current -= actionUpgrades.studyTome.goul.cost;
+        studyMultiplier();
+        madCapIncrease();
+        flashFade('goulWrap');
+        actionUpgrades.studyTome.goul.purchased = true;
+        fleshCrafts.cannibalism.unlocked = true;
+        fleshCrafts.cannibalism.purchased = true;
+        document.getElementById('cannibalismWrap').style.display='block';
+        comment('Tome title translated: To Serve Man (Cannibalism unlocked in FleshCrafts)');
     }
 }
 function eibon(){//unlocked by tome
     if(stats.vision.current >= actionUpgrades.studyTome.eibon.cost){
-        sMult();
+        studyMultiplier();
+        madCapIncrease();
+        flashFade('eibonWrap');
         actionUpgrades.studyTome.eibon.purchased = true;
-    }
-}
-function goul(){//unlocked by tome
-    if(stats.vision.current >= actionUpgrades.studyTome.goul.cost){
-        sMult();
-        actionUpgrades.studyTome.goul.purchased = true;
     }
 }
 function alch(){//unlocked by tome
     if(stats.vision.current >= actionUpgrades.studyTome.alch.cost){
-        sMult();
+        studyMultiplier();
+        madCapIncrease();
+        flashFade('alchWrap');
         actionUpgrades.studyTome.alch.purchased = true;
     }
 }
 function damn(){//unlocked by tome
      if(stats.vision.current >= actionUpgrades.studyTome.damn.cost){
-        sMult();
+        studyMultiplier();
+        madCapIncrease();
+        flashFade('damnWrap');
         actionUpgrades.studyTome.damn.purchased = true;
     }
 }
 function necr(){//unlocked by tome
     if(stats.vision.current >= actionUpgrades.studyTome.necr.cost){
-        sMult();
+        studyMultiplier();
+        madCapIncrease();
+        flashFade('necrWrap');
         actionUpgrades.studyTome.necr.purchased = true;
     }
 }
 function azat(){//unlocked by tome
     if(stats.vision.current >= actionUpgrades.studyTome.azat.cost){
-        sMult();
+        studyMultiplier();
+        madCapIncrease();
+        flashFade('azatWrap');
         actionUpgrades.studyTome.azat.purchased = true;
     }
 }
@@ -646,14 +642,6 @@ function azat(){//unlocked by tome
 	//                  Chant upgrades
 	//=========================================
 
-function dholChants(){
-    let chantz = document.getElementById('chantWrap');
-    const button = document.createElement("button");
-    button.textContent = " ";
-    button.id="chantToggle"; 
-    chantz.appendChild(button);
-    document.getElementById('chantToggle').addEventListener('click',  () => chantToggle());
-}
 function chantToggle(){
     if(actions.chant.toggle === false){
     actions.chant.toggle = true;
@@ -663,15 +651,15 @@ function chantToggle(){
     document.getElementById('chantToggle').style.backgroundColor='red';
     }
 }
-function autoChant(){
-    if(actions.chant.autoCtr >= actions.chant.autoNum){
-        actions.chant.autoCtr = 0;
-        stats.madness.current += 0.04;
-        stats.charm.current += 0.08;
-        document.getElementById('madness').innerHTML= Math.floor(stats.madness.current);
-        document.getElementById('charm').innerHTML= Math.floor(stats.charm.current);
-    }else{
-        actions.chant.autoCtr++;
+function autoChant(tics){
+    if(actions.chant.ticCounter < actions.chant.ticsNeeded){
+        actions.chant.ticCounter += tics;
+        if(actions.chant.ticCounter>= actions.chant.ticsNeeded){
+            actions.chant.ticCounter = 0;
+            window.console.log('chantTic');
+            numberChange('stats', 'madness', 0.4, 'red', 'blue');
+            numberChange('stats', 'charm', 0.8, 'yellow', 'red');
+        }
     }
 }
 
@@ -687,7 +675,7 @@ function choir(){
 	//                  Preach upgrades
 	//=========================================
 
-function fiction(){
+function fiction(){//??
     if(stats.vision.current >= 100){
         stats.vision.current -= 100;
         document.getElementById('vision').innerHTML = stats.vision.current;
@@ -702,28 +690,28 @@ function fiction(){
 	//=========================================
         
 function madAct(madAction){ 
-    let stat = madActions[madAction]['costStat'];
+    let stat = madActions[madAction].costStat;
     let temp;
     if(madAction === 'drink' || madAction === 'smoke' ||madAction === 'flagellate'){
-        temp = stats[stat]['current'];
+        temp = stats[stat].current;
     }else{
-          temp = vault[stat]['current'];
+          temp = vault[stat].current;
     }
-    if(temp >= madActions[madAction]['cost']){ //check if payable
+    if(temp >= madActions[madAction].cost){ //check if payable
         temp -= madActions[madAction]['cost'];
-        if(stats['madness']['current'] > madActions[madAction]['benefit']){ //don't let madness go below 0
-            stats['madness']['current'] -= madActions[madAction]['benefit'];
+        if(stats.madness.current > madActions[madAction].benefit){ //don't let madness go below 0
+            stats.madness.current -= madActions[madAction].benefit;
         }else{
-            stats['madness']['current'] = 0;
+            stats.madness.current = 0;
         }
         if(madAction === 'drink' || madAction === 'smoke' ||madAction === 'flagellate'){
-            stats[stat]['current'] = temp;
-            document.getElementById(stat).innerHTML = Math.floor(stats[stat]['current']);
+            stats[stat].current = temp;
+            document.getElementById(stat).innerHTML = Math.floor(stats[stat].current);
         }else{
-            vault[stat]['current'] = temp;
-            document.getElementById(stat).innerHTML = Math.floor(vault[stat]['current']) ;
+            vault[stat].current = temp;
+            document.getElementById(stat).innerHTML = Math.floor(vault[stat].current) ;
         }
-        document.getElementById('madness').innerHTML = Math.floor(stats['madness']['current']) ;
+        document.getElementById('madness').innerHTML = Math.floor(stats.madness.current) ;
         flash('madness', 'blue', 'white');
         flash(stat , 'red', 'white');
         }
@@ -791,16 +779,16 @@ function west(){
     for(i=0;i<statKeys.length;i++){
             document.getElementById('statBox').innerHTML +=
             "<div class='westStatBox' id='" + statKeys[i] + "Box'>" +
-            "<span class='" + statKeys[i] + "Text'>" + stats[statKeys[i]]['string'] + "</span>" +
+            "<span class='" + statKeys[i] + "Text'>" + stats[statKeys[i]].string + "</span>" +
             "<span class='" + statKeys[i] + "Text westNumbers'  id='" + statKeys[i] + "'></span>" +
             "</div>";
     };
     for(i=0;i<statKeys.length; i++){
-        document.getElementById(statKeys[i]).innerHTML = stats[statKeys[i]]['current'];
+        document.getElementById(statKeys[i]).innerHTML = stats[statKeys[i]].current;
     };
     document.getElementById('testBox').innerHTML +=
-            "<button id='time'>Time</button>" +
-            "<button id='test'>Test</button>" +
+            //"<button id='time'>Time</button>" +
+            //"<button id='test'>Test</button>" +
             "<button id='save'>Save</button>" +
             "<button id='load'>Load</button>";
     document.getElementById('west').innerHTML =    
@@ -812,7 +800,7 @@ function west(){
     for(i=0;i<actionKeys.length;i++){
         document.getElementById('actionBox').innerHTML +=
                 "<div class='actionColumn' id='" + actionKeys[i] + "Column'>" +
-                "<button type='button' class='actionWraps hover-container' id='" + actionKeys[i] + "Wrap'></button>" +
+                "<button type='button' class='actionWraps' id='" + actionKeys[i] + "Wrap'></button>" +
                 "</div>";
         if(i>0){
             document.getElementById(actionKeys[i] + 'Column').innerHTML +=
@@ -825,6 +813,7 @@ function west(){
          "<span class='actionText'>Study Tome</span>" +
          "<span id='studyProgress'></span>";
     document.getElementById('chantWrap').innerHTML += 
+         "<span id='chantToggle'></span>" +
          "<img class='actionPng' src='images/chant.png' alt='?'/>" +
          "<span class='actionText'>Chant</span>";
     document.getElementById('dreamWrap').innerHTML += 
@@ -842,14 +831,14 @@ function west(){
         let upgrades = Object.keys(actionUpgrades[actionColumn]);
         for(j=0;j<upgrades.length;j++){
             document.getElementById(actionColumn + "Column").innerHTML += 
-                "<button class='actionUpgradeWraps' id='" + upgrades[j] + "Wrap'>" + actionUpgrades[actionColumn][upgrades[j]]['string'] + "</button>";
+                "<button class='actionUpgradeWraps' id='" + upgrades[j] + "Wrap'>" + actionUpgrades[actionColumn][upgrades[j]].string + "</button>";
         };
     };
     //mad actions
     for(i=0;i<madKeys.length;i++){
             document.getElementById('madActionBox').innerHTML +=
                     "<button class='madActionWraps' id='" +madKeys[i] + "Wrap'>" +
-                    "<span class='madTitle'>" + madActions[madKeys[i]]['string'] + "</span>" + 
+                    "<span class='madTitle'>" + madActions[madKeys[i]].string + "</span>" + 
                     "<img class='madActionPng' src='images/" + madKeys[i] + ".png' alt='?'/>" +
                     "</button>";
     };
@@ -864,7 +853,7 @@ function makeDreamChoices(){
         "<div id='dreamChoices'></div>";
     for(i=0;i<dreamKeys.length;i++){
         document.getElementById('dreamChoices').innerHTML +=
-        "<button class='dreamChoice' id='" + dreamKeys[i] + "Choice' onmouseup='dreamChoice(\"" + dreamKeys[i]+ "\")'>" + dreamChoices[dreamKeys[i]]['string'] + "</button>";
+        "<button class='dreamChoice' id='" + dreamKeys[i] + "Choice' onmouseup='dreamChoice(\"" + dreamKeys[i]+ "\")'>" + dreamChoices[dreamKeys[i]].string + "</button>";
     }
 };
  makeDreamChoices();

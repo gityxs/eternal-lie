@@ -66,7 +66,7 @@ function eventListeners1(){
         let actionColumn = upgradeKeys[i];
         let upgrades = Object.keys(actionUpgrades[actionColumn]);
         for(j=0;j<upgrades.length;j++){
-            document.getElementById(upgrades[j] + 'Wrap').addEventListener('click', actionUpgrades[actionColumn][upgrades[j]]['func']);
+            document.getElementById(upgrades[j] + 'Wrap').addEventListener('click', actionUpgrades[actionColumn][upgrades[j]].func);
         };
     };
 
@@ -87,18 +87,18 @@ var sacTypes = document.querySelectorAll('.sacrificeType');
     });
   });
     for(i=0;i<worldKeys.length;i++){
-        document.getElementById(worldKeys[i] + "Wrap").addEventListener('click', world[worldKeys[i]]['func']);
+        document.getElementById(worldKeys[i] + "Wrap").addEventListener('click', world[worldKeys[i]].func);
     }
      for(i=0;i<dreamExKeys.length;i++){
-        document.getElementById(dreamExKeys[i] + "Wrap").addEventListener('click', dreamEx[dreamExKeys[i]]['func']);
+        document.getElementById(dreamExKeys[i] + "Wrap").addEventListener('click', dreamEx[dreamExKeys[i]].func);
     }
 
 }
 function eventListeners2(){
     //vault scroll
-    var vaultActionBoxes = document.getElementsByClassName("vaultActionBox");
-    for (var i = 0; i < vaultActionBoxes.length; i++) {
-        let element = vaultActionBoxes[i];
+    var craftBoxes = document.getElementsByClassName("craftBox");
+    for (var i = 0; i < craftBoxes.length; i++) {
+        let element = craftBoxes[i];
         element.addEventListener("mouseover", function() {
         addMouseWheelListener(element);
       });
@@ -106,25 +106,27 @@ function eventListeners2(){
         removeMouseWheelListener(element);
       });
     }
-            //test buttons
-document.getElementById('time').addEventListener('click',  () => schTogFunc());
+            //test buttons schTogFunc()
+//document.getElementById('time').addEventListener('click',  () => localStorage.clear());
 document.addEventListener("visibilitychange", function () { //should fix off screen weirdness
     if (document.hidden) {
+        afkStamp = performance.now();
        timeOff();
     } else {
+        afk();
        timeOn();
     }    
-});
-document.getElementById('test').addEventListener('click',  () => nyar());
+});//
+//document.getElementById('test').addEventListener('click',  () => dhol());
 document.getElementById('save').addEventListener('click',  () =>  saveToLocalStorage());
 document.getElementById('load').addEventListener('click',  () => loadClick());
     //main actions and their unlocks
-    document.getElementById('chantLock').addEventListener('click',  () => unlock('chant', actions));
-    document.getElementById('dreamLock').addEventListener('click',  () => unlock('dream', actions));
-    document.getElementById('preachLock').addEventListener('click',  () => unlock('preach', actions));
+    document.getElementById('chantLock').addEventListener('click',  () => unlock('chant', 'actions'));
+    document.getElementById('dreamLock').addEventListener('click',  () => unlock('dream', 'actions'));
+    document.getElementById('preachLock').addEventListener('click',  () => unlock('preach', 'actions'));
 
     document.getElementById('studyTomeWrap').addEventListener('click',  () => studyTome());
-    document.getElementById('chantWrap').addEventListener('mouseover', () => chantTimer());
+    document.getElementById('chantWrap').addEventListener('mouseover', chantTimer);
     document.getElementById('dreamWrap').addEventListener("mousedown", () => startDreamTimer() );
     document.getElementById('dreamWrap').addEventListener("mouseup", () =>  endDreamTimer() );
     document.getElementById('preachWrap').addEventListener('click', () => preach());
@@ -136,23 +138,24 @@ document.getElementById('load').addEventListener('click',  () => loadClick());
     //vault button presses
     for(i=0;i<vaultKeys.length; i++){
         let temp = vaultKeys[i];
-        document.getElementById(temp + "Wrap").addEventListener('click', () => changeCultTab(temp));
+        document.getElementById(temp + "Wrap").addEventListener('click', () => changeCraftBox(temp));
     }
     for(let j=0; j<craftKeys.length; j++){
         let key = craftKeys[j];
         for(let k=0; k<key.length; k++){
-            if(craftTypeKeys[j][key[k]]['permanent'] === true){
-                document.getElementById(key[k]+ "Wrap").addEventListener('click', craftTypeKeys[j][key[k]]['func']);  
-                if(craftTypeKeys[j][key[k]]['lockText']){
-                    document.getElementById(key[k]+ "Lock").addEventListener('click', () => unlock(key[k], craftTypeKeys[j]));   
+            if(craftTypeKeys[j][key[k]].permanent === true){
+                document.getElementById(key[k]+ "Wrap").addEventListener('click', craftTypeKeys[j][key[k]].func);  
+                if(craftTypeKeys[j][key[k]].unlockText){
+                    document.getElementById(key[k]+ "Lock").addEventListener('click', () => unlock(key[k], craftStringKeys[j]));   
                 }
             }
-            if(craftTypeKeys[j][key[k]]['permanent']=== false){
-                document.getElementById(key[k]+ "OneOffs").addEventListener('click', craftTypeKeys[j][key[k]]['func']);  
+            if(craftTypeKeys[j][key[k]].permanent=== false){
+                document.getElementById(key[k]+ "OneOffs").addEventListener('click', craftTypeKeys[j][key[k]].func);  
             }
         }
     }
         document.getElementById('rhanWrap').addEventListener('click', () => rhan());
+        document.getElementById('nyarWrap').addEventListener('click', () => nyar());
 }
 
     //code for description hovers
@@ -171,39 +174,38 @@ function addCommentsToButtons(set) {
             };
             container.appendChild(descriptionBox);
             const description = document.createElement('p');
-            window.console.log(set[setKey]);
-            description.textContent = set[setKey]['description'][0];
+            description.textContent = set[setKey].description[0];
             description.classList.add('desc'); 
             const Id = setKey + 'Desc'; 
             description.id = Id; 
             descriptionBox.appendChild(description);
-            if(set[setKey]['description'][3]){
+            if(set[setKey].description[3]){
                  const terror = document.createElement('span');
-                terror.textContent = set[setKey]['description'][3];
+                terror.textContent = set[setKey].description[3];
                 terror.classList.add('desc'); 
                 const Id = setKey + 'Terror'; 
                 terror.id = Id; 
                 descriptionBox.appendChild(terror);
             }
-            if(set[setKey]['description'][1]){
+            if(set[setKey].description[1]){
                  const cost = document.createElement('span');
-                cost.textContent = set[setKey]['description'][1];
+                cost.textContent = set[setKey].description[1];
                 cost.classList.add('desc'); 
                 const Id = setKey + 'cost'; 
                 cost.id = Id;
                 descriptionBox.appendChild(cost);
-                if(set[setKey]['cost']){
+                if(set[setKey].cost){
                     const costs = document.createElement('span');
-                    costs.textContent = set[setKey]['cost'];
+                    costs.textContent = set[setKey].cost;
                     costs.classList.add('costs'); 
                     const Id = setKey + 'Cost'; 
                     costs.id = Id; 
                     cost.appendChild(costs);
                 }
             }
-            if(set[setKey]['description'][2]){
+            if(set[setKey].description[2]){
                  const benefit = document.createElement('span');
-                benefit.textContent = set[setKey]['description'][2];
+                benefit.textContent = set[setKey].description[2];
                 benefit.classList.add('desc'); 
                 const Id = setKey + 'Benefit'; 
                 benefit.id = Id;
@@ -216,7 +218,7 @@ function addCommentsToButtons(set) {
             descriptionBox.classList.add('lockDesc');
             locks.appendChild(descriptionBox);
             const description = document.createElement('p');
-            description.textContent = set[setKey]['lockText'];
+            description.textContent = set[setKey].lockCost;
             description.classList.add('desc'); 
             const Id = setKey + 'Desc'; 
             description.id = Id; 
@@ -225,7 +227,7 @@ function addCommentsToButtons(set) {
     });
 }
 function commentListeners(){
-    const descParents = document.querySelectorAll(".actionWraps, .actionUpgradeWraps, .madActionWraps, .cultWraps, .vaultWraps, .vaultActionWraps, .vaultActionLocks, .vaultActionOneOffs, .worldWraps, .dreamExWraps, .godsWraps, .relicWraps");
+    const descParents = document.querySelectorAll(".actionWraps, .actionUpgradeWraps, .madActionWraps, .cultWraps, .craftWraps, .craftWraps, .craftLocks, .craftOneOffs, .worldWraps, .dreamExWraps, .godsWraps, .relicWraps");
     descParents.forEach(function (container) {
         const parent = container; 
         const descriptionBox = container.querySelector(".descriptionBox");
@@ -266,14 +268,18 @@ document.addEventListener("DOMContentLoaded", function () {  //start of page aft
     document.getElementById('studyTomeColumn').style.display='block';
     document.getElementById('westTab').style.display='block';
     var saveTest = localStorage.getItem("savedDomUnlocks");  //save test
+    var nyarTest = localStorage.getItem('nyarStats'); //saved only in nyar resets
     commentListeners();
     eventListeners1();
     eventListeners2();
     if (saveTest !== null) {
-            loadFromLocalStorage();
-            window.console.log('loaded');
+        loadFromLocalStorage();
+        window.console.log('loaded');
+    }else if (nyarTest !== null){
+        window.console.log('nyarload');
+        nyarPostReset();
     }else{
-        eventBox("images/cultist.png", "Eternal Lie", "Waking as out of a dream, you stand alone in a darkened alley, hands feverishly clutching an ancient manuscript. A soothing voice in your mind calms you and hints at future glory.");
+        eventBox("images/faithful.png", "Eternal Lie", "Waking as out of a dream, you stand alone in a darkened alley, hands feverishly clutching an ancient manuscript. A soothing voice in your mind calms you and hints at future glory.");
     }
 
 
@@ -289,7 +295,7 @@ document.addEventListener("DOMContentLoaded", function () {  //start of page aft
 	// Unlocks and updates
 	//========================================= 
 
-let ticCounterForUnlock = 10;
+let ticCounterForUnlock = 1;
 let ticCounter = 0;
 function checkUnlockCounter(tics){
     if((ticCounter + tics) >= ticCounterForUnlock){
@@ -303,11 +309,11 @@ function checkUnlockCounter(tics){
 
 function checkUnlocks(){
     for(i=0;i<statKeys.length; i++){ ///main stats
-        if(stats[statKeys[i]]['unlocked'] === false ){
-            let unlockStat = stats[statKeys[i]]['unlock'][0];
-            let unlockNum = stats[statKeys[i]]['unlock'][1];
-            if(stats[unlockStat]['current'] >= unlockNum){
-                stats[statKeys[i]]['unlocked'] = true; 
+        if(stats[statKeys[i]].unlocked === false ){
+            let unlockStat = stats[statKeys[i]].unlock[0];
+            let unlockNum = stats[statKeys[i]].unlock[1];
+            if(stats[unlockStat].current >= unlockNum){
+                stats[statKeys[i]].unlocked = true; 
                 document.getElementById(statKeys[i] + 'Box').style.display='block';
             }
         }
@@ -323,7 +329,7 @@ function checkUnlocks(){
     if(stats.charm.current >=4 && actions.preach.unlocked === false && actions.preach.purchased === false){
         document.getElementById('preachLock').style.display='block';
     }
-    if(stats['madness']['current'] >= 32 &&  stats.madness.madActionBoxUnlocked === false){
+    if(stats.madness.current >= 32 &&  stats.madness.madActionBoxUnlocked === false){
         stats.madness.madActionBoxUnlocked = true;
         comment('One must maintain a certain balance in life.', 'lavender');
         document.getElementById('madActionBox').style.display='block';
@@ -331,15 +337,15 @@ function checkUnlocks(){
         document.getElementById('smokeWrap').style.display='block';
     }
     for(i=0;i<madKeys.length; i++){ ///mad actions
-        if(madActions[madKeys[i]]['unlocked'] === false ){
-            let unlockStat = madActions[madKeys[i]]['unlock'][0];
-            let unlockNum = madActions[madKeys[i]]['unlock'][1];
-            if(madActions[madKeys[i]]['costStat'] === 'health'  && stats['health']['current']  <= 20 ){
+        if(madActions[madKeys[i]].unlocked === false ){
+            let unlockStat = madActions[madKeys[i]].unlock[0];
+            let unlockNum = madActions[madKeys[i]].unlock[1];
+            if(madActions[madKeys[i]].costStat === 'health'  && stats.health.current  <= 20 ){
                 document.getElementById(madKeys[i] + 'Wrap').style.display='block';
-                madActions[madKeys[i]]['unlocked'] = true;
-            }else if(unlockStat === 'love' && vault[ 'love']['current']  >= unlockNum||unlockStat === 'terror' && vault[unlockStat]['current']  >= unlockNum){
+                madActions[madKeys[i]].unlocked = true;
+            }else if(unlockStat === 'love' && vault.love.current  >= unlockNum||unlockStat === 'terror' && vault[unlockStat].current  >= unlockNum){
                 document.getElementById(madKeys[i] + 'Wrap').style.display='block';
-                madActions[madKeys[i]]['unlocked'] = true;
+                madActions[madKeys[i]].unlocked = true;
             }
         }
     }

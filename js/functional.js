@@ -9,23 +9,22 @@ function changeTab(temp){
         var elementName = subs[i].id;
         var tabName = elementName + 'Tab';
         if (elementName === temp) {
-            document.getElementById(tabName).style.backgroundColor = '#424242'; // Active tab
+            document.getElementById(tabName).style.backgroundColor = 'black'; // Active tab
         } else {
-            document.getElementById(tabName).style.backgroundColor = 'black'; // Inactive tabs
+            document.getElementById(tabName).style.backgroundColor = '#424242'; // Inactive tabs
         }
     }
     document.getElementById(temp).style.display = 'block';
 }
-function changeCultTab(temp){
-    window.console.log("tab");
+function changeCraftBox(temp){
     //change display
-    var parentID = document.getElementById('vaultActions');
-    var subs = parentID.getElementsByClassName('vaultActionBox');
+    var parentID = document.getElementById('right');
+    var subs = parentID.getElementsByClassName('craftBox');
     for(var i = 0; i < subs.length; i++){
         var a = subs[i];
         a.style.display = 'none';
     }
-    document.getElementById(temp + 'ActionBox').style.display = 'block';
+    document.getElementById(temp + 'Box').style.display = 'block';
 }
 
 //flash
@@ -41,7 +40,32 @@ if (!flashingElements[div]) {
   setTimeout(temp, 500);
   }
 }
-
+//stat change in dev
+function numberChange(parent, stat, change, pColor, nColor){
+    if(parent === 'stats'){
+    stats[stat].current += change;
+    document.getElementById(stat).innerHTML = Math.floor(stats[stat].current);
+    }else if(parent === 'cult'){
+    cult[stat].current += change;
+    document.getElementById(stat).innerHTML = cult[stat].current;
+    }else if(parent === 'vault'){
+    vault[stat].current += change;
+    document.getElementById(stat).innerHTML = Math.floor(vault[stat].current);
+    }
+    if(change > 0){
+        document.getElementById(stat).style.color = pColor;
+        function temp() {
+            document.getElementById(stat).style.color = 'white';
+        }
+    setTimeout(temp, 250);
+    }else if(change <0){
+        document.getElementById(stat).style.color = nColor;
+        function temp() {
+            document.getElementById(stat).style.color = 'white';
+        }
+        setTimeout(temp, 250);
+    }
+}
 
 //audio 
 
@@ -102,42 +126,59 @@ function comment(comment, rating, classy){
 //unlocks
 
 function unlock(button, parent){
-    window.console.log(button, parent, stats.vision.current, parent[button]['unlockCost']);
-    if(stats.vision.current >= parent[button]['unlockCost']){
-        stats.vision.current -= parent[button]['unlockCost']; 
-        document.getElementById('vision').innerHTML= Math.floor(stats.vision.current);
-        flashFade(button + 'Lock');
-        setTimeout(() => {document.getElementById(button + 'Wrap').style.display='block';}, 1500);
-        if(parent[button]['comment']){
-            comment(parent[button]['comment']);
+    if(parent === 'actions'){
+        if(stats.vision.current >= actions[button]['unlockCost']){
+            stats.vision.current -= actions[button]['unlockCost']; 
+            document.getElementById('vision').innerHTML= Math.floor(stats.vision.current);
+            flashFade(button + 'Lock');
+            setTimeout(() => {document.getElementById(button + 'Wrap').style.display='block';}, 1500);
+            if(actions[button]['comment']){
+                comment(actions[button]['comment']);
+            }
+            actions[button].purchased = true;
         }
-            // cases
-        if(button === 'chant'){
-            actions.chant.purchased = true;
-            window.console.log(actions.chant);
-            chantTimer();
-        }
-         if(button === 'dream'){
-            actions.dream.purchased = true;
-            chantTimer();
-        }
-         if(button === 'preach'){
-            actions.preach.purchased = true;
-            chantTimer();
-        }
-        if(button === 'convertChanter'){
+    }
+    //crafts
+    if(button === 'convertChanter'){
+        if(stats.vision.current >= loveCrafts[button]['unlockCost']){
+            stats.vision.current -= loveCrafts[button]['unlockCost']; 
+            document.getElementById('vision').innerHTML= Math.floor(stats.vision.current);
+            flashFade(button + 'Lock');
+            setTimeout(() => {document.getElementById(button + 'Wrap').style.display='block';}, 1500);
             loveCrafts.convertChanter.purchased = true;
             cult.chanters.unlocked = true;
             document.getElementById('chantersWrap').style.display='block';
         }
-        if(button === 'convertSentinal'){
-             terrorCrafts.convertSentinal.purchased = true;
-            cult.sentinals.unlock = true;
+    }
+    if(button === 'convertSentinal'){
+        if(stats.vision.current >= terrorCrafts[button]['unlockCost']){
+            stats.vision.current -= terrorCrafts[button]['unlockCost']; 
+            document.getElementById('vision').innerHTML= Math.floor(stats.vision.current);
+            flashFade(button + 'Lock');
+            setTimeout(() => {document.getElementById(button + 'Wrap').style.display='block';}, 1500);
+            terrorCrafts.convertSentinal.purchased = true;
+            cult.sentinals.unlocked = true;
             document.getElementById('sentinalsWrap').style.display='block';
-        } 
-        if(button === 'tithe'){
-            goldCrafts.tithe.unlocked = true;
+        }
+    } 
+    if(button === 'tithe'){
+        if(stats.vision.current >= goldCrafts[button]['unlockCost']){
+            stats.vision.current -= goldCrafts[button]['unlockCost']; 
+            document.getElementById('vision').innerHTML= Math.floor(stats.vision.current);
+            flashFade(button + 'Lock');
+            setTimeout(() => {document.getElementById(button + 'Wrap').style.display='block';}, 1500);
+            goldCrafts.tithe.purchased = true;
             document.getElementById('titheToggle').style.display='block';
+        }
+    }
+    if(parent === 'fleshCrafts'){
+        window.console.log(stats.vision.current, fleshCrafts[button]['unlockCost']);
+        if(stats.vision.current >= fleshCrafts[button]['unlockCost']){
+            stats.vision.current -= fleshCrafts[button]['unlockCost']; 
+            document.getElementById('vision').innerHTML= Math.floor(stats.vision.current);
+            flashFade(button + 'Lock');
+            setTimeout(() => {document.getElementById(button + 'Wrap').style.display='block';}, 1500);
+            fleshCrafts[button].purchased = true;
         }
     }
 };
@@ -174,4 +215,27 @@ function scrollDiv(event, element) {
   event.preventDefault();
   const delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
   element.scrollTop -= delta * 30; // Adjust the scrolling speed as needed
+}
+
+
+var shakeAnimationId;
+function shakeBody() {
+  var eventBox = document.getElementById('eventBox');
+  var move = 10;
+  var delay = 50; 
+  function shake() {
+    document.body.style.transform = 'translate(' + move + 'px,' + move + 'px)';
+    eventBox.style.transform = 'translate(' + -move + 'px,' + -move + 'px)';
+    move = -move; 
+    shakeAnimationId = setTimeout(shake, delay);
+  }
+
+  shake();
+}
+
+function cancelShakeAnimation() {
+  clearTimeout(shakeAnimationId);
+  document.body.style.transform = '';
+  var eventBox = document.getElementById('eventBox');
+  eventBox.style.transform = '';
 }

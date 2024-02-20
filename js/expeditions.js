@@ -12,8 +12,8 @@ Oriab
 let world = {
   crypt: {//unlocked by expeditions
       string: 'Desolate Crypt',
-      description: ['Rifle through the bones of the dead seeking tomes of power.', 'Cost: Gold ', 'Benefits: Gold and loose pages'],
-      description2: ['Less interesting crypts remain potentially profitable'],
+      description: ['Rifle through the bones of the dead seeking tomes of power.', 'Cost: Gold ', 'Benefits: unknown'],
+      description2: ['Less interesting crypts remain potentially profitable', 'Cost: Gold ', 'Benefits: Gold'],
       cost: 48,
       func: crypt,
       unlocked: false,
@@ -21,7 +21,7 @@ let world = {
   },
   wax: {//unlocked by expeditions
       string: 'Wax Museum',
-      description: ['Find the Truth in the basement.', 'Cost: Gold ', ' '],
+      description: ['Find the Truth in the basement.', 'Cost: Gold ', 'Benefit: unknown'],
       description2: ['So many innocents wandering the halls.', 'Cost: Gold ', 'Benefit: 1 Innocent'],
       cost: 84,
       loot: ['innocent'],
@@ -32,8 +32,9 @@ let world = {
   },
   tower: {//unlocked by expeditions
       string: 'Shunned Towers',
-      description: ['The locals know to avoid these old ruins at all costs.', ' Cost: Gold ', 'Benefits: Gold and loose pages'],
-      cost: 240,
+      description: ['The locals know to avoid these old ruins at all costs.', ' Cost: Gold ', 'Benefit: unknown'],
+      description2: ['The moldy bookcases still hold secrets for the patient.', 'Cost: Gold ', 'Benefit: pages from ruined manuscripts'],
+      cost: 164,
       func: tower,
       loot: ['Shining Trapezohedron'],// unlocks dream expeditions
       unlocks: ['kult'],
@@ -43,7 +44,7 @@ let world = {
   estate: {//unlocked by expeditions unlocks reef
       string: 'Ancestral Estate',
       description: ['Lost memories of a door and a Silver Key.', 'Cost: Gold '],
-      cost: 848,
+      cost: 484,
       loot: ['silver key', 'reef'],
       unlocked: false,
       purchased: false
@@ -67,8 +68,10 @@ let world = {
   }, 
   desert: {//unlocked by 
       string: 'Desert Fastness',
-      description: ['Lost to all but a broken few, they hide many things.', ' Cost: Gold '],
+      description: ['Buried tombs hide passages into Darkness', ' Cost: Gold ', 'Benefit: ?'],
+      description2: ['Nothing', 'Cost: Gold ', 'Benefit: nothing'],
       cost: 4848,
+      func: desert,
       loot: ['gates'],
       unlocks: ['Yig', 'Nyarlathotep'],
       unlocked: false,
@@ -107,7 +110,7 @@ function loadWorldExpeditions(){
     for(i=0;i<worldKeys.length;i++){
             const worlds = document.getElementById('world');
             const button = document.createElement('button');
-            button.textContent = world[worldKeys[i]]['string'];
+            button.textContent = world[worldKeys[i]].string;
             button.classList.add('worldWraps');
             const Id = worldKeys[i] + 'Wrap';
             button.id = Id; 
@@ -136,6 +139,15 @@ let dreamEx = {
       cost: 8,
       func: ulthar,
       loot: ['cat', 'Seven Cryptical books of Hsan'],
+      unlocked: false,
+      purchased: false
+  },
+  plateau: {//home to the black ship Men of Leng satyrs who eat people
+      string: 'Plateau of Leng',
+      description: ['Few return from the Plateau of Leng.', ' Cost: Radiance '],
+      cost: 22,
+      func: plateau,
+      loot: ['The Men of Leng regale you with a feast and gift you a Tome'],
       unlocked: false,
       purchased: false
   },
@@ -212,15 +224,6 @@ let dreamEx = {
       unlocked: false,
       purchased: false
   }, 
-  plateauOfLeng: {//home to the black ship Men of Leng satyrs who eat people
-      string: 'Plateau of Leng',
-      description: ['.', ' Cost: Radiance '],
-      cost: 22,
-      func: plateau,
-      loot: ['The Men of Leng regale you with a feast and gift you a Tome'],
-      unlocked: false,
-      purchased: false
-  },
   unknownKadath: {//unlocked by black ship
       string: 'Unknown Kadath',
       description: ['? ', 'Cost: Radiance '],
@@ -236,7 +239,7 @@ function loadDreamExpeditions(){
     for(i=0;i<dreamExKeys.length;i++){
             const dreams = document.getElementById('dreamEx');
             const button = document.createElement('button');
-            button.textContent = dreamEx[dreamExKeys[i]]['string'];
+            button.textContent = dreamEx[dreamExKeys[i]].string;
             button.classList.add('dreamExWraps');
             const Id = dreamExKeys[i] + 'Wrap';
             button.id = Id; 
@@ -254,23 +257,34 @@ function loadDreamExpeditions(){
 
 function crypt(){
     if(vault.gold.current > world.crypt.cost){
-        let gold = vault['gold']['current'] ;
-        vault['gold']['current'] -= world['crypt']['cost'];
-        vault['flesh']['current'] += Math.max(cult.sentinals.current, 1); //always flesh in a crypt
-        let tmp = world['crypt']['cost'] * (0.25 + Math.random() * 2.75);
-        vault['gold']['current'] += tmp; //gold return randomizer
+        let gold = vault.gold.current ;
+        vault.gold.current -= world.crypt.cost;
+        let tmp = world.crypt.cost * (0.25 + Math.random() * 2);
+        vault.gold.current += tmp; //gold return randomizer
         document.getElementById('gold').innerHTML= Math.floor(vault.gold.current);
         let goldDif = Math.floor(vault.gold.current - gold);
-        if(goldDif > 0){
-            comment('A profitable gamble. Your Sentinals found some Flesh and Gold:' + goldDif, 'lightgreen', 'green');
-        }else if(goldDif < 0){
-            comment('Your Sentinals found some Flesh but overall a net loss of Gold:' + goldDif, 'red', 'red');
+        window.console.log(cult.sentinals.unlocked);
+        if(cult.sentinals.unlocked === true){
+            let temp = Math.max((Math.random() * cult.sentinals.current), 1); //always flesh in a crypt
+            numberChange('vault', 'flesh', Math.floor(temp), 'red', 'red');
+            if(goldDif > 0){
+                comment('A profitable gamble. Your Sentinals found some Flesh and Gold:' + goldDif, 'lightgreen', 'green');
+            }else if(goldDif < 0){
+                comment('Your Sentinals found some Flesh but overall a net loss of Gold:' + goldDif, 'red', 'red');
+            }
+            vault.flesh.unlocked = true;
+            document.getElementById('fleshWrap').style.display = 'block';
+            world.crypt.description2[2] = 'Benefits: Flesh and Gold';
+            window.console.log('1');
+        }else{
+            if(goldDif > 0){
+                comment('A profitable gamble. You found some Gold:' + goldDif, 'lightgreen', 'green');
+            }else if(goldDif < 0){
+                comment('Overall a net loss of Gold:' + goldDif, 'red', 'red');
+            }
         }
         if(world.crypt.purchased === false){
             world.crypt.purchased = true;
-            vault.flesh.unlocked = true;
-            document.getElementById('fleshWrap').style.display = 'block';
-            document.getElementById('flesh').innerHTML = vault.flesh.current;
             vault.tomes.unlocked = true;
             vault.tomes.current += 1;
             document.getElementById('tomesWrap').style.display='block';
@@ -281,48 +295,42 @@ function crypt(){
             actionUpgrades.studyTome.pnat.unlocked = true;
             document.getElementById('cryptWrap').style.backgroundColor='grey';
             document.getElementById('cryptDesc').innerHTML = world.crypt.description2[0];
-        }else{
-            comment('loose pages...');
-            vault.tomes.pageCounter += Math.random() * 4;
-            if(vault.tomes.pageCounter >= vault.tomes.pagesNeeded){
-                comment('With these new pages, you have enough to complete a new Tome. Acquire the needed -leather- and bind it to begin the translation. (Lovecrafts)', 'pink', 'purple');
-            }
+            document.getElementById('cryptBenefit').innerHTML = world.crypt.description2[2];
         }
-        world['crypt']['cost'] = world['crypt']['cost'] * 1.12;
+        if(cult.sentinals.unlocked === true){
+            }
+        world.crypt.cost = Math.ceil(world.crypt.cost * 1.2);
+        document.getElementById('cryptCost').innerHTML= world.crypt.cost;
     }
 }
 function wax(){
-    if(vault['gold']['current'] > world['wax']['cost']){
-        vault['gold']['current'] -= world['wax']['cost'];
-        world['wax']['cost'] += 1;
-        document.getElementById('waxCost').innerHTML = world['wax']['cost'];
+    if(vault.gold.current > world.wax.cost){
+        numberChange('vault', 'gold', -world.wax.cost, 'yellow', 'red');
+        world.wax.cost = Math.ceil(world.wax.cost * 1.2);
+        document.getElementById('waxCost').innerHTML = world.wax.cost;
         if(world.wax.purchased === false){
             document.getElementById('sacrariumTab').style.display='block';
             document.getElementById('rhanWrap').style.display='block';
             eventBox("images/sacrarium.png", "Rhan-Tegoth!", "Locked away in the basement you find her, the Harbinger. Give her what she desires and she will reward you with unearthly Radiance. (Sacrarium unlocked)");
             comment('Free her... feed her... She is the harbinger.');
             document.getElementById('waxWrap').style.backgroundColor='grey';
-            document.getElementById('waxDesc').innerHTML = world['wax']['description2'][0];
-            document.getElementById('waxBenefit').innerHTML = world['wax']['description2'][2];
-            flash('sacrariumTab', '#8000FF', 'white');
+            document.getElementById('waxDesc').innerHTML = world.wax.description2[0];
+            document.getElementById('waxBenefit').innerHTML = world.wax.description2[2];
             domUnlocks.sacrarium = true;
             gods.rhan.unlocked = true;
             world.wax.purchased = true;
     }else{
-        cult['innocents']['current'] += 1;
-        document.getElementById('innocents').innerHTML = Math.floor(cult['innocents']['current']);
+        numberChange('cult', 'innocents', 1, 'green', 'red');
         comment('so innocent...');
-        flash('innocents', 'blue', 'white');
     }
-        document.getElementById('gold').innerHTML = Math.floor(vault['gold']['current']);
         flash('cultTab', 'blue', 'white');
-        flash('gold', 'red', 'white');
     }
 }
 function tower(){
     if(vault.gold.current >= world.tower.cost){
-        vault.gold.current -= world.tower.cost;
-        document.getElementById('gold').innerHTML = Math.floor(vault.gold.current);
+        numberChange('vault', 'gold', -world.tower.cost, 'yellow', 'red');
+        world.tower.cost = Math.ceil(world.tower.cost * 1.2);
+        document.getElementById('towerCost').innerHTML = world.tower.cost;
         if(world.tower.purchased === false){
             world.tower.purchased = true;
             relics.trap.unlocked = true;
@@ -332,25 +340,42 @@ function tower(){
             setTimeout(function() {
                 document.getElementById('dreamEx').style.display = 'flex';
             }, 2000);
+            dreamEx.pillarOfFlame.unlocked = true;
+            dreamEx.ulthar.unlocked = true;
+            dreamEx.plateau.unlocked = true;
             document.getElementById('pillarOfFlameWrap').style.display='block';
             document.getElementById('ultharWrap').style.display='block';
-            document.getElementById('plateauOfLengWrap').style.display='block';
+            document.getElementById('plateauWrap').style.display='block';
             comment('Dream a little dream for me...', 'lightblue', 'blue');
-            eventBox('images/trap.jpg', 'Shining Trapezohedron', 'It calls to you from a distance, promising visions of Realms beyond. Once in its sight, you know you will never part with it while you live.  (Dream Expeditions unlocked. Trapezohedron placed in Sacrarium.)');
+            eventBox('images/trap.jpg', 'Shining Trapezohedron', 'It calls to you from a distance, revealing visions of Realms beyond. Once in its sight, you know you will never part with it while you live.  (Dream Expeditions unlocked. Trapezohedron placed in Sacrarium.)');
             document.getElementById('towerWrap').style.backgroundColor='grey';
-            document.getElementById('towerDesc').innerHTML = world['wax']['description2'][0];
-            document.getElementById('towerBenefit').innerHTML = world['wax']['description2'][2];
-        }
+            document.getElementById('towerDesc').innerHTML = world.tower.description2[0];
+            document.getElementById('towerBenefit').innerHTML = world.tower.description2[2];
+        }  
         comment('loose pages...');
-        vault.tomes.pageCounter += Math.random() * 8;
+        let page = Math.random() * world.tower.cost/10;
+        vault.tomes.pageCounter += page;
+        document.getElementById('pages').innerHTML = Math.floor(vault.tomes.pageCounter);
         if(vault.tomes.pageCounter >= vault.tomes.pagesNeeded){
             comment('With these new pages, you have enough to complete a new Tome. Acquire the needed -leather- and bind it to begin the translation. (Fleshcrafts)', 'pink', 'purple');
         }
     }
 }
 
-function estate(){
+function estate(){//unlocked reef bc innsmouth
     
+}
+function desert(){
+    window.console.log(vault.gold.current);
+    if(vault.gold.current >= 4848){
+        vault.gold.current  -=  4848;
+        world.desert.purchased = true;
+        flashFade('desertWrap');
+        gods.nyar.unlocked = true;
+        document.getElementById('nyarWrap').style.display='block';
+        eventBox('images/desert.jpg', 'Hidden Passage', 'Having breached the ancient wall, you gaze into the depths and hear a faint piping. There is a flash like lightning and then laughter. (Nyarlathotep waits for you in the Sacrarium)');
+
+    }
 }
         	//=========================================
 	// dream expedition functions
@@ -358,8 +383,8 @@ function estate(){
 
 function pillarOfFlame(){
     if(stats.radiance.current>=4){
-        stats.radiance.current-=4;
-        document.getElementById('radiance').innerHTML= stats.radiance.current;
+        numberChange('stats', 'radiance', -4, 'blue', 'red');
+        dreamEx.pillarOfFlame.purchased = true;
         flashFade('pillarOfFlameWrap');
         document.getElementById('dreamChosen').style.display='block';
         document.getElementById('dreamDropBtn').style.display='block';
@@ -372,16 +397,27 @@ function pillarOfFlame(){
 }
 function ulthar(){
     if(stats.radiance.current>=8){
-        stats.radiance.current-=8;
+        numberChange('stats', 'radiance', -8, 'blue', 'red');
+        dreamEx.ulthar.purchased = true;
         flashFade('ultharWrap');
         document.getElementById('bastWrap').style.display='block';
-        flash('sacrariumTab', 'lightgreen');
-        eventBox('images/bast.png', 'Cats of Ulthar', 'A friendly Abyssinian adopts you as you pass through the quiet city streets. Its presence proves very calming.(passive Madness reduction)');
+        relics.bast.unlocked = true;
+        flash('sacrariumTab', 'lightgreen', 'white');
+        eventBox('images/bast.png', 'Cats of Ulthar', 'A friendly Abyssinian adopts you as you pass through the quiet city streets. Its presence proves very calming. (passive Madness reduction)');
         comment('A beautiful creature (sacrarium)');
     }
 }
-function plateau(){
-    
+function plateau(){//unlocks desert bc agents of nyar, book to serve man de goul?22
+    if(stats.radiance.current >= 22){
+        numberChange('stats', 'radiance', -22, 'blue', 'red');
+        dreamEx.plateau.purchased = true;
+        flashFade('plateauWrap');
+        world.desert.unlocked = true;
+        setTimeout(() => {document.getElementById('desertWrap').style.display='block';}, 2000);
+        document.getElementById('goulWrap').style.display = 'block';
+        actionUpgrades.studyTome.goul.unlocked = true;
+        eventBox('images/plateau.jpg', 'Men of Leng', 'Dangerous looking men invite you to a feast. As you dine, they share stories of secrets buried in the desert. You are so invigorated by the repast you ask for the recipe. They happily oblige. (Cultes des Goules in West tab, Desert Expedition Unlocked)');
+    }
 }
 
 function cele(){

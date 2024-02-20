@@ -78,7 +78,7 @@ function updateMadnessBoxPosition(moveAmountX, moveAmountY) {
     madnessBox.style.left = newLeftVw + 'vw';
     madnessBox.style.top = newTopVh + 'vh';
 }
-// Function to check for changes in stats['madness']['current']
+// Function to check for changes in stats.madness.current
 function checkMadnessValue() {
     let currentValue = stats.madness.current; 
     let madDelta =  lastCheckedValue - currentValue; //changes in madness
@@ -108,15 +108,15 @@ function checkMadnessValue() {
         'Comic Sans MS, cursive'
     ];
     if(madDelta< 0){ // If the madness goes up by 1, generate positive and negative random movement
-        if (countTo1 > 1 && stats.madness.current > 32) {
+        if (countTo1 > 1 && stats.madness.current > (stats.madness.madCap/2)) {
             countTo1 = 0;
-            moveAmountX = (Math.random() * 2 - 1) *  (stats.madness.current * 0.16);
-            moveAmountY = (Math.random() * 2 - 1) *  (stats.madness.current * 0.16);
+            moveAmountX = (Math.random() * 2 - 1) *  (stats.madness.current * 0.16) * (88/stats.madness.madCap);
+            moveAmountY = (Math.random() * 2 - 1) *  (stats.madness.current * 0.16) * (88/stats.madness.madCap);
             updateMadnessBoxPosition(moveAmountX, moveAmountY);
                                                                                                                                                     //bigger box
-            let madWidth = (stats.madness.current /4 ) + 'vw';
+            let madWidth = ((stats.madness.current /4 ) * (88/stats.madness.madCap) )+ 'vw';
             document.getElementById('madnessBox').style.width=madWidth;
-            let madHeight =  (stats.madness.current /4) + 'vh';
+            let madHeight = ((stats.madness.current /4) * (88/stats.madness.madCap)) + 'vh';
             document.getElementById('madnessBox').style.height=madHeight;           
             const madnessTextElements = document.querySelectorAll('.madnessText');
             madnessTextElements.forEach(element => {
@@ -126,8 +126,8 @@ function checkMadnessValue() {
                     randomFont = fonts[Math.floor(Math.random() * fonts.length)];
                     } while (randomFont === currentFont); // Keep generating until a different font is selected
                 element.style.fontFamily = randomFont;
-                element.style.fontSize = stats.madness.current/10  + 'vh';
-                element.style.lineHeight = stats.madness.current/10 + 1 + 'vh';
+                element.style.fontSize = ((stats.madness.current/10) * (88/stats.madness.madCap))  + 'vh';
+                element.style.lineHeight = ((stats.madness.current/10 + 1) * (88/stats.madness.madCap)) + 'vh';
             });
         }
     } else if (madDelta > 0) {    // If the madness goes down
@@ -147,8 +147,8 @@ function checkMadnessValue() {
         let currentWidth = parseFloat(document.getElementById('madnessBox').style.width);
         if (currentWidth > 8) {
             // Update the width and height
-            document.getElementById('madnessBox').style.width = (stats.madness.current /4) + 'vw';
-            document.getElementById('madnessBox').style.height = (stats.madness.current /4) + 'vh';
+            document.getElementById('madnessBox').style.width = Math.max(4, ((stats.madness.current /4 ) * (88/stats.madness.madCap))) + 'vw';
+            document.getElementById('madnessBox').style.height = Math.max(4, ((stats.madness.current /4 ) * (88/stats.madness.madCap))) + 'vh';
         }else{
             document.getElementById('madnessBox').style.width = 8 + 'vw';
             document.getElementById('madnessBox').style.height = 7 + 'vh';
@@ -159,8 +159,8 @@ function checkMadnessValue() {
                 const madnessTextElements = document.querySelectorAll('.madnessText');
                 const randomFont = fonts[Math.floor(Math.random() * fonts.length)];
                 element.style.fontFamily = randomFont;
-                element.style.fontSize = stats.madness.current/10  + 'vh';
-                element.style.lineHeight = stats.madness.current/10 + 1 + 'vh';
+                element.style.fontSize =((stats.madness.current/10) * (88/stats.madness.madCap) )  + 'vh';
+                element.style.lineHeight = ((stats.madness.current/10 + 1) * (88/stats.madness.madCap)) + 'vh';
             }else{
             element.style.fontFamily =  "Papyrus", "Arial", 'sans-serif';
             element.style.lineHeight = 3 + 'vh';
@@ -236,7 +236,7 @@ function madUnlock(){
     madBools[1] = false;
 }
 
-let madCheckCounter = [0, 44];
+let madCheckCounter = [0, 2];
 let madBools = [false, false];
 function madCheck(){
     if(madCheckCounter[0] < madCheckCounter[1]){
@@ -244,21 +244,20 @@ function madCheck(){
     }else{
         madCheckCounter[0] = 0;
         if(madBools[1] === false){//bool 1 for 1/2
-            if(stats.madness.current >= (stats.madness.madCap/2) && madBools[0] === false){
+            if(stats.madness.current >= (stats.madness.madCap * 2/3) && madBools[0] === false){
                 madBools[0] = true;
                 comment('Do not listen to the fools who say you must keep your Madness in check. (High Madness inceases Terror levels)', 'pink');
-            }else if(stats.madness.current >= (stats.madness.madCap/2) && madBools[0] === true){
+            }else if(stats.madness.current >= (stats.madness.madCap * 2/3) && madBools[0] === true){
                 vault.terror.current++;
                 document.getElementById('terror').innerHTML= Math.floor(vault.terror.current);
-            }else if(stats.madness.current < (stats.madness.madCap/2) && madBools[0] === true){
+            }else if(stats.madness.current < (stats.madness.madCap /3) && madBools[0] === true){
                 madBools[0] = false;
             }
             if(stats.madness.current >= stats.madness.madCap){
                 madLock();
             }
         }else{
-            window.console.log('3');
-            if(stats.madness.current <= (stats.madness.madCap/2)){
+            if(stats.madness.current <= (stats.madness.madCap * 2/3)){
                 madUnlock();
             }
         }

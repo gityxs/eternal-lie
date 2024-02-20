@@ -70,7 +70,7 @@ function makeSacrarium(){
     for(i=0;i<godKeys.length;i++){
             document.getElementById('gods').innerHTML +=
                 "<button class='godsWraps' id='" + godKeys[i] + "Wrap'>" +
-                "<span class='godTitles'>" + gods[godKeys[i]]['string'] + "</span>" +
+                "<span class='godTitles'>" + gods[godKeys[i]].string + "</span>" +
                 "</button>";
     }
 };
@@ -82,30 +82,49 @@ makeSacrarium();
 
 
 function rhan(){
-    if(cult['innocents']['current'] >= 8){
-        cult['innocents']['current'] -= 8;
-        stats['radiance']['current'] += 4;
-        vault['flesh']['current'] += 4;
-        vault.terror.current += 88;
-        stats.madness.current += 44;
-        stats['radiance']['unlocked'] = true;
-        vault['flesh']['unlocked'] = true;
+    if(cult.innocents.current >= 8){
+        numberChange('cult', 'innocents', -8, 'blue', 'red');
+        numberChange('stats', 'radiance', 4, 'blue', 'red');
+        numberChange('stats', 'madness', 44, 'blue', 'red');
+        numberChange('vault', 'flesh', 4, 'red', 'red');
+        numberChange('vault', 'terror', 88, 'red', 'red');
+        stats.radiance.unlocked = true;
+        vault.flesh.unlocked = true;
         gods.rhan.purchased = true;
         relics.rhanRelic.unlocked = true;
         terrorCrafts.sacrifice.unlocked = true;
+        terrorCrafts.sacrifice.purchased = true;
+        goldCrafts.oakAltar.unlocked = true;
+        document.getElementById('oakAltarOneOffs').style.display='block';
         document.getElementById('rhanWrap').style.display='none';
         document.getElementById('rhanRelicWrap').style.display='block';
         document.getElementById('sacDropBtn').style.display='block';
         document.getElementById('sacrificeWrap').style.display='block';
         document.getElementById('fleshWrap').style.display = 'block';
         document.getElementById('radianceBox').style.display='block';
-        document.getElementById('flesh').innerHTML =  Math.floor(vault['flesh']['current']);
-        document.getElementById('madness').innerHTML =  Math.floor(stats['madness']['current']);
-        document.getElementById('radiance').innerHTML =  Math.floor(stats['radiance']['current']);
-        document.getElementById('innocents').innerHTML=cult['innocents']['current'];
         eventBox("images/rhan.png", "Rhan-Tegoth", "She is pleased (Madness +44, Terror +88) but ever hungry. Hidden within the shrine, her thoughts now echo through the halls. (Rhan- Tegoth passive benefits, Sacrfice unlocked in TerrorCrafts," );
         comment('hungry...', 'pink');
     }
+}
+
+function nyar(){
+        shakeBody();
+        eventBox("images/nyar.png", "Destiny", "Shall we dance?");
+        let parent = document.getElementById('eventBox');
+        let yes =  document.createElement('button');
+        yes.id = 'yes';
+        yes.innerHTML = 'Yes!';
+        parent.appendChild(yes);
+        let no =  document.createElement('button');
+        no.id = 'no';
+        no.innerHTML = 'no...';
+        parent.appendChild(no);
+        document.getElementById('yes').addEventListener('click',   () => nyarReset());
+        document.getElementById('no').addEventListener('click',   () => nony());
+}
+function nony(){
+    closeEventBox();
+    cancelShakeAnimation();
 }
 
 let relics = {
@@ -114,20 +133,21 @@ let relics = {
         description: ['Brought forth only for the Sacrifice, her thoughts emanate from the darkness at all times. (Passive Vision, Madness and Terror)'],
         unlocked: false,
         ticCounter: 0,
-        tics: 44
+        tics: 4
   },
     trap:{
         string: 'Shining Trapezohedron',
         description: ['Visions of other realms abound, but what watches back through the shining crystal facets? (Passive Vision and Madness.)'],
         unlocked: false,
         ticCounter: 0,
-        tics: 44
+        tics: 4
     }, 
     bast:{
         string: 'Bast',
-        description: ['A friendly cat from Ulthar took a liking to you. Very calming. (passive madness reduction)'],
+        description: ['A friendly cat from Ulthar has taken a liking to you. Very calming. ( Passive Charm, Passive Madness reduction)'],
         unlocked: false,
-        tics: 22
+        ticCounter: 1,
+        tics: 2
     }, 
     tyog:{
         string: 'Scroll of Tyog',
@@ -144,29 +164,22 @@ let relicKeys = Object.keys(relics);
 function buildRelics(){
     for(i=0;i<relicKeys.length;i++){
         document.getElementById('relics').innerHTML +=
-                "<span class='relicWraps' id='" + relicKeys[i] + "Wrap'>" + relics[relicKeys[i]]['string'] + "</span>";
+                "<span class='relicWraps' id='" + relicKeys[i] + "Wrap'>" + relics[relicKeys[i]].string + "</span>";
     }
 }
 buildRelics();
 
 function relicsTic(){
     for(i=0;i<relicKeys.length;i++){
-        if(relics[relicKeys[i]]['unlocked'] === true){
+        if(relics[relicKeys[i]].unlocked === true){
             if(relicKeys[i] === 'rhanRelic'){
                 if(relics.rhanRelic.ticCounter< relics.rhanRelic.tics){
                     relics.rhanRelic.ticCounter++;
                 }else{
                     relics.rhanRelic.ticCounter = 0;
-                    stats.madness.current += 0.4;
-                    stats.vision.current += 0.8;
-                    if(cult.chanters.current >=1){
-                    vault.terror.current += Math.max(((cult.innocents.current / cult.chanters.current)), 0.04);
-                }else{
-                     vault.terror.current += 0.04;
-                }
-                    document.getElementById('madness').innerHTML =  Math.floor(stats['madness']['current']);
-                    document.getElementById('vision').innerHTML =  Math.floor(stats['vision']['current']);
-                    document.getElementById('terror').innerHTML =  Math.floor(vault['terror']['current']);
+                    numberChange('stats', 'madness', 1, 'red', 'blue');
+                    numberChange('stats', 'vision', 2, '#40E0D0', 'red');
+                    numberChange('vault', 'terror', 1, 'red', 'blue');
                 }
             }
             if(relicKeys[i] === 'trap'){
@@ -174,10 +187,8 @@ function relicsTic(){
                     relics.trap.ticCounter++;
                 }else{
                     relics.trap.ticCounter = 0;
-                    stats.madness.current += 0.4;
-                    stats.vision.current += 0.8;
-                    document.getElementById('madness').innerHTML =  Math.floor(stats['madness']['current']);
-                    document.getElementById('vision').innerHTML =  Math.floor(stats['vision']['current']);
+                    numberChange('stats', 'madness', 1, 'red', 'blue');
+                    numberChange('stats', 'vision', 2, '#40E0D0', 'red');
                 }
             }
             if(relicKeys[i] === 'bast'){
@@ -185,8 +196,8 @@ function relicsTic(){
                     relics.bast.ticCounter++;
                 }else{
                     relics.bast.ticCounter = 0;
-                    stats.madness.current -= 0.4;
-                    document.getElementById('madness').innerHTML =  Math.floor(stats['madness']['current']);
+                    numberChange('stats', 'madness', -1, 'red', 'blue');
+                    numberChange('stats', 'charm', 1, 'yellow', 'red');
                 }
             }
         }
