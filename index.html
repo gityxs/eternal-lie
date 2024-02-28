@@ -1,0 +1,68 @@
+<html>
+    <head>
+        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+        <link rel="icon" href="favicon.ico" type="image/x-icon">
+        <title>Eternal Lie</title>
+        <link rel="stylesheet" href="lie.css">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div id="top">
+            <div id='topLeft'>
+            <img id='title' src="images/Title.png " alt="?"/>
+        </div>
+        <div id='statBox'>
+            <h2 id='name'>Dr. Enoch West</h2>
+        </div>
+            <div id='testBox'></div>
+            <div id='commentBox'>
+                <img id='topNyar' src="images/nyar.png" alt="alt"/>
+                <h3 id='commentaryTitle'>Whispers in the Darkness</h3>
+                <div id='commentary'></div>
+            </div>
+            <div id='tabRow'>
+                <button class='tabs' id ="westTab" onclick="changeTab('west')"> Professor West</button>
+                <button class='tabs' id ="cultTab" onclick="changeTab('cult')">Cult</button>
+                <button class='tabs' id ="expeditionsTab" onclick="changeTab('expeditions')">Expeditions</button>
+                <button class='tabs' id ="sacrariumTab" onclick="changeTab('sacrarium')">Sacrarium</button>
+            </div>
+        </div>
+        <div id="mainWrapper">
+            <div id="eventBox"></div>
+            <div class="bigBox" id="west"></div>
+            <div class="bigBox" id="cult">
+                <div id='left'>
+                    <h2>The Chosen</h2>
+                    <div><span id='meeting'>Meeting at</span><span id="location">Moonlit Grove</span></div>
+                </div>
+                <div id='center'>
+                    <h2>The Obsidian Vault</h2>
+                    <div id='vault'></div>
+                </div>
+                <div id='right'></div>
+             </div>
+            <div class="bigBox" id='expeditions'>
+                <div id='world'>
+                    <h1 id='theWorld'>The World</h1>
+                </div>
+                <div id='dreamEx'>
+                    <h1 id="theDreaming">The Dreaming</h1>
+                </div>
+                </div>
+            <div class="bigBox" id="sacrarium"></div>
+        </div>
+        <div id="footer"><a href="help.html" target="_blank" rel="noopener noreferrer">Lost? Help page.</a></div> 
+        <script src="js/startup.js"></script>
+        <script src="js/functional.js"></script>  
+        <script src="js/west.js"></script>   
+        <script src="js/cult.js"></script>   
+        <script src="js/expeditions.js"></script>   
+        <script src="js/sacrarium.js"></script>   
+        <script src="js/divine.js"></script>  
+        <script src="js/time.js"></script> 
+        <script src="js/penalties.js"></script> 
+        <script src="js/events.js"></script> 
+        <script src="js/save.js"></script> 
+    </body>
+</html>
